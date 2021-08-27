@@ -1,0 +1,52 @@
+-remodel:cstfilter 1000 # this is important if you use atom pair constraints and want output...
+-remodel:RemodelLoopMover:temperature 2.0 # trajectories sometimes get caught in local minima for the helical parameters increasing the temperature helps to move around more ### default temperature is 2.0 BTW
+#-constraints:cst_file lattice_csts.cst # some constraint file for atom pairs if you want
+-s start.pdb
+#### remodel flags ####
+-remodel:blueprint design.blueprint
+-use_clusters false
+-generic_aa L
+-repeat_structure 4
+-remodel:quick_and_dirty
+-preserve_header
+-chain A
+-picking_old_max_score 1
+#-overwrite
+-remodel:design:no_design
+-remodel:use_same_length_fragments false
+-show_simulation_in_pymol 0
+-remodel:no_jumps
+-indexed_structure_store:fragment_threshold_distance 0.4
+
+#--for digs choose some appropriate motif database for scoring
+-mh:path:scores_BB_BB /home/drhicks1/DB/motifs/xs_bb_ss_AFILVWY_FILWY_resl0.5_smooth1.3_msc0.3_mbv1.0/xs_bb_ss_AFILVWY_FILWY_resl0.5_smooth1.3_msc0.3_mbv1.0
+
+#--remodel flags for tj's/derricks samplings
+-remodel:staged_sampling true
+-start_w_ideal_helices
+-sample_over_loops
+
+#--repeat params desired values (make sure you put reasonable values here...)
+# samples values here are for ankrin repeat I think
+-remodel:staged_sampling:repeat_params true
+-score:ideal_repeat_numrepeats 4 # make sure this is the same as -repeat_structure above, otherwise very interesting things will happen.
+-score:ideal_repeat_rise 4.0
+-score:ideal_repeat_radius 25.0
+-score:ideal_repeat_curve 0.30
+#--repeat params desired values
+-score:ideal_repeat_rise_before_func QUAD # options are QUAD LINEAR CONST0
+-score:ideal_repeat_radius_before_func LINEAR
+-score:ideal_repeat_curve_before_func QUAD
+-score:ideal_repeat_rise_after_func QUAD
+-score:ideal_repeat_radius_after_func LINEAR
+-score:ideal_repeat_curve_after_func QUAD
+
+# to filter out designs with bad helix fragments
+-indexed_structure_store:fragment_store  /home/drhicks1/DB/hdf5/ss_grouped_vall_all.h5 
+
+#--motifs
+-score:max_motif_per_res 3.0
+-score:ignore_terminal_ss_elements 2
+-ignore_terminal_ss_elements 2
+#-remodel:rg_local <weight float>
+#-score:rg_local_span <1 or 2 repeat unit length to score ie 1-20>

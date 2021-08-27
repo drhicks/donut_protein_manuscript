@@ -1,0 +1,17 @@
+<ROSETTASCRIPTS>
+<TASKOPERATIONS>
+</TASKOPERATIONS>
+<SCOREFXNS>
+        <ScoreFunction name="sfxn_beta" weights="beta" symmetric="false"/>
+</SCOREFXNS>
+<FILTERS>
+    <worst9mer name="worst9mer_a" threshold="0.45" confidence="1"/>
+    <worst9mer name="worst9mer_h" threshold="0.20" only_helices="true" confidence="1"/>
+</FILTERS>
+<MOVERS>
+</MOVERS>
+<PROTOCOLS>
+    <Add filter_name="worst9mer_h"/>
+    <Add filter_name="worst9mer_a"/>
+</PROTOCOLS>
+</ROSETTASCRIPTS>

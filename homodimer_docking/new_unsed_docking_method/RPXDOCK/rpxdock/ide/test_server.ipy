@@ -1,0 +1,158 @@
+#!/usr/bin/env ipython
+
+"""
+ipython ide/test_server.ipy rpxdock/tests/search/test_hierarchical.py sublime_build.log 8080
+
+then ping localhost:8080 to run test script within same python env
+
+one way to do this is:
+python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080')"
+"""
+
+import sys, os, glob, types
+from time import perf_counter
+import http.server
+import socketserver
+from cppimport import import_hook
+from IPython.utils import io
+from importlib import reload, import_module
+
+
+allmodules = [
+'rpxdock',
+# 'rpxdock.app.genrate_motif_scores',
+'rpxdock.body',
+'rpxdock.bvh',
+'rpxdock.bvh.bvh',
+'rpxdock.bvh.bvh_nd',
+'rpxdock.bvh.bvh_test',
+'rpxdock.cluster',
+'rpxdock.cluster.prune',
+'rpxdock.conftest',
+'rpxdock.data',
+'rpxdock.dockspec',
+'rpxdock.geom',
+'rpxdock.geom.bcc',
+'rpxdock.geom.miniball',
+# 'rpxdock.geom.primitive_test',
+'rpxdock.geom.rotation',
+'rpxdock.geom.xform_dist',
+'rpxdock.io',
+'rpxdock.io.io',
+'rpxdock.io.io_body',
+'rpxdock.motif',
+'rpxdock.motif._motif',
+'rpxdock.motif.hierscore',
+'rpxdock.motif.motif',
+'rpxdock.motif._loadhack',
+'rpxdock.motif.pairdat',
+'rpxdock.motif.pairscore',
+'rpxdock.phmap',
+'rpxdock.phmap.phmap',
+'rpxdock.rosetta',
+'rpxdock.rotamer',
+'rpxdock.rotamer.richardson',
+'rpxdock.rotamer.rotamer',
+'rpxdock.sampling',
+'rpxdock.sampling._orientations',
+'rpxdock.sampling._orientations_test',
+'rpxdock.sampling.orientations',
+'rpxdock.sampling.xform_hierarchy',
+'rpxdock.sampling.xhier_util',
+'rpxdock.search',
+'rpxdock.search.gridslide',
+'rpxdock.search.hierarchical',
+'rpxdock.search.plug',
+'rpxdock.sym',
+# 'rpxdock.tests.bvh.test_bvh',
+# 'rpxdock.tests.bvh.test_bvh_nd',
+# 'rpxdock.tests.cluster.test_cluster',
+# 'rpxdock.tests.geom.test_bcc',
+# 'rpxdock.tests.geom.test_geom',
+# 'rpxdock.tests.motif.test_hierscore',
+# 'rpxdock.tests.motif.test_motif',
+# 'rpxdock.tests.motif.test_pairscore',
+# 'rpxdock.tests.phmap.test_phmap',
+# 'rpxdock.tests.rotamer.test_richardson',
+# 'rpxdock.tests.sampling.test_orientations',
+# 'rpxdock.tests.sampling.test_xform_hierarchy',
+# 'rpxdock.tests.search.test_gridslide',
+# 'rpxdock.tests.search.test_hierarchical',
+# 'rpxdock.tests.search.test_plug',
+# 'rpxdock.tests.test_body',
+# 'rpxdock.tests.test_dockspec',
+# 'rpxdock.tests.test_sym',
+# 'rpxdock.tests.util.test_pybind_types',
+# 'rpxdock.tests.util.test_util',
+# 'rpxdock.tests.xbin.test_smear',
+# 'rpxdock.tests.xbin.test_xbin',
+'rpxdock.util',
+'rpxdock.util.bunch',
+# 'rpxdock.util.dilated_int_test',
+'rpxdock.util.plot',
+# 'rpxdock.util.pybind_types_test',
+'rpxdock.util.util',
+'rpxdock.xbin',
+'rpxdock.xbin.smear',
+'rpxdock.xbin.xbin',
+'rpxdock.xbin.xbin_test',
+]
+
+to_reload = []
+for m in allmodules:
+    exec('import %s' % m, globals(), locals())
+    if eval("isinstance(%s, types.ModuleType)" % m):
+        exec("to_reload.append(%s)" % m, globals(), locals())
+
+totest = sys.argv[1]
+outfile = 'sublime_build.log' if len(sys.argv) < 3 else sys.argv[2]
+PORT = 8080 if len(sys.argv) < 4 else int(sys.argv[3])
+
+%load_ext autoreload
+%autoreload 2
+
+
+count = 0
+
+class TestHandler(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        global count
+        count += 1
+        with open(outfile, 'w') as out:
+            out.write(f"running {totest} {count}")
+        for m in to_reload:
+            reload(m)
+        for m in to_reload:
+            reload(m)
+        print('running', count)
+        tmp = sys.stdout, sys.stderr
+        # with open(outfile, 'w') as out:
+            # sys.stdout = out
+            # sys.stderr = out
+        with io.capture_output() as captured:
+            os.system('rm -f test_*.pdb')
+            print(sys.argv[0])
+            print('test:', totest)
+            print('runcount:', count)
+            print(f'{" test results ":=^80}')
+            t = perf_counter()
+            %run $totest server_test
+            print('exe time', perf_counter()-t)
+        s = captured.stdout
+        s = s.replace('[0;31m','').replace('[1;32m','').replace('[0;32m','')
+        s = s.replace('[0;34m','').replace('[0;36m', '')
+        s = s.replace('', '').replace('[0m','')
+        with open(outfile, 'w') as out:
+            out.write(s)
+        # sys.stdout, sys.stderr = tmp
+
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+        self.wfile.write("done".encode('utf-8'))
+        self.server.path = self.path
+
+
+with socketserver.TCPServer(("", PORT), TestHandler) as httpd:
+    print("serving at port", PORT)
+    httpd.serve_forever()

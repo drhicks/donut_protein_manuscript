@@ -1,0 +1,4 @@
+#run the rosetta job ### now up to date with master !!!! ###
+/home/drhicks1/Rosetta_DRH_merge/main/source/bin/rosetta_scripts.hdf5.linuxgccrelease -parser:protocol design.xml @flags -nstruct 10 > run.log
+#convert the outputs to poly Ala so they look normal in pymol
+for i in $(find . -maxdepth 1 -mindepth 1 -name "*pdb") ; do bash extract_backbone.sh $i > tmp ; mv tmp $i ; done

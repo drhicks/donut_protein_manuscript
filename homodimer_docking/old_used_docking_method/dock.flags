@@ -1,0 +1,69 @@
+#-database /work/sheffler/rosetta/scheme/database
+#-sicdock:axis2ang 90
+
+-nfold 2
+
+
+-sicdock:resA XXXX
+-sicdock:resB YYYY
+-sicdock:resAB_maxdis 20.0
+-resAB_require_all_contacts true
+
+-mute all
+-unmute protocols.motif_hash
+
+-nstruct						100		#number of "top" PDB files to dump
+-nscore							10000		# number of structures / scores to dump into the .dok ".silent" file
+-sicdock:out:minimal_pdb		false	# dump only the backbone
+-renumber_pdb
+
+-mh:dump:max_per_res			0		# max motifs output per residue, can be high for canonical interactions
+-mh:dump:max_rms				2.0		# how stringently should OUTPUT motifs match the frames on which they are overlayed HAS NO EFFECT ON DOCKING
+
+-sicdock:min_score              5
+-sicdock:min_score_contact_cut  0.1 
+-sicdock:sample_resolution		2.5
+
+-motif_match_radius 			1.5
+-mh:score:use_log				0
+-sicdock:weights:motif			1.0
+
+######## these options apply to linker / loop scoring. leave as is unless you want your docking partners connected by a linker ####
+#-sicdock:weights:splice			-10		#0=only motif, higher favors termini closer
+#-sicdock:weights:splice_dist2	20
+#-sicdock:splice:max_dis			20
+#-sicdock:splice:ends			true
+#-sicdock:splice:gaps			false
+#-sicdock:splice:max_trim		0
+
+-sicdock:sample_thickness		3.0
+
+-sicdock:sieve:redundancy_allscore	true
+-sicdock:sieve:redundancy_angle_cut	2.0
+-sicdock:sieve:redundancy_dist_cut	2.0		# redundancy threshold in A rmsd, no outputs will be closer than this to one another
+
+-mh:path:scores_BB_BB /home/drhicks1/DB/motifs/xs_bb_ss_AFILVWY_FILWY_resl0.5_smooth1.3_msc0.3_mbv1.0/xs_bb_ss_AFILVWY_FILWY_resl0.5_smooth1.3_msc0.3_mbv1.0
+-mh:path:motifs /home/drhicks1/DB/motifs/xs_bb_ss_AFILVWY_FILWY_resl0.5_smooth1.3_msc0.3_mbv1.0/xs_bb_ss_AFILVWY_FILWY_resl0.5_smooth1.3_msc0.3_mbv1.0.rpm.bin.gz
+
+## sequence-specific motifs
+#-mh:path:motifs		/work/sheffler/data/mh3/BB_BB_all_sc10_sep10.rpm.bin.gz
+#-mh:match:aa true
+#-mhmatch:ss false
+#
+## seq dep motifs:
+#-mh:path:scores_BB_BB	/work/sheffler/data/mh3/xs_bb_aa_ALL_ssep10/xs_bb_aa_ALL_ssep10_
+#-mh:harvest:sep_aa true
+#-mh:harvest:sep_ss false
+-mh::score::use_ss1 true
+-mh::score::use_ss2 true
+-mh::score::use_aa1 false
+-mh::score::use_aa2 false
+#
+#-mh:dump:resfile
+#-mh:dump:resfile_min_pair_score 
+#-mh:dump:resfile_min_tot_score      0.5
+-chemical:exclude_patches common
+-detect_disulf false
+-ignore_unrecognized_res
+-score_cache 0
+-slide_cache 0

@@ -1,0 +1,1 @@
+/software/rosetta/latest/bin/rosetta_scripts.hdf5.linuxgccrelease -parser:protocol design_cyclic_oligomers.xml -beta -parser:script_vars sym=2 -holes:dalphaball /software/rosetta/DAlphaBall.gcc -multithreading:total_threads 1 -s ${1}

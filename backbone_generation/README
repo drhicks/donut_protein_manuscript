@@ -1,0 +1,43 @@
+#1
+# python make_file.py
+
+#2
+# bash generate_job_list.sh
+
+#3a test that a few jobs run without error
+# randomly select a few jobs and run manually in an interactive node (ie qlogin -n1 --mem=4G)
+
+#3b if things run without errors submit all of the jobs to queue
+# bash submit_runs.sh
+
+#important stuff for flags file
+##--repeat params desired values (make sure you put reasonable values here...)
+# samples values here are for ankrin repeat I think
+#-score:ideal_repeat_rise 4.0
+#-score:ideal_repeat_radius 25.0
+#-score:ideal_repeat_curve 0.30
+#--repeat params desired values
+#-score:ideal_repeat_rise_before_func QUAD # options are QUAD LINEAR CONST0
+#-score:ideal_repeat_radius_before_func LINEAR
+#-score:ideal_repeat_curve_before_func QUAD
+#-score:ideal_repeat_rise_after_func QUAD
+#-score:ideal_repeat_radius_after_func LINEAR
+#-score:ideal_repeat_curve_after_func QUAD
+
+#improtant terms for score *wts files
+#rpre 1.0
+#rprae 1.0
+#rpce 1.0
+
+
+#important filters in design script (inside make_file.py)
+#<FILTERS>
+#    <worst9mer name="worst9mer" threshold="0.15" only_helices="true" confidence="1" />
+#    <ScoreType name="motif_score" scorefxn="sfn_motif" threshold="-1.0" confidence="1" />
+#    <ScoreType name="motif_degree_score" scorefxn="sfn_motif_degree" threshold="-0.3" confidence="1" />
+#    <SSDegree name="ss_degree_avg" report_avg="true" ignore_terminal_ss="2"/>
+#    <SSDegree name="ss_degree_worst" report_avg="false" threshold="3" ignore_terminal_ss="2"/> # this should be 3 or 4 
+#    <RepeatParameter name="radius" param_type="radius" numb_repeats="4" min="15" max="35" confidence="1"/> # filter on radius # choose appropriate range
+#    <RepeatParameter name="rise" param_type="rise" numb_repeats="4" min="0" max="8" confidence="1"/> # filter on rise # choose appropriate range
+#    <RepeatParameter name="twist" param_type="omega" numb_repeats="4" min="0.1" max="0.5" confidence="1"/> # filter on omega / twist / curvature # choose appropriate range
+#</FILTERS>

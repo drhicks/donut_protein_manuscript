@@ -1,0 +1,14 @@
+vdw 1.0
+omega 1.0
+hbond_sr_bb 1.0
+rama 0.5
+cen_pair_motif_degree 30.0
+cen_pair_motifs 7.0
+rpre 0.2
+rprae 0.2
+rpce 0.2
+cbeta_smooth 0.1
+cenpack_smooth 1.0
+sidechain_neighbors 0.1
+rg 2.0
+atom_pair_constraint 0.0

@@ -1,0 +1,30 @@
+name: rpxdock
+channels:
+ - conda-forge
+ - https://pose:foldtree@conda.graylab.jhu.edu
+dependencies:
+ - python>=3.7
+ - pyrosetta
+ - numpy=1.16.3
+ - matplotlib
+ - pandas=0.24.2
+ - xarray=0.11.3
+ - ipython
+ - cffi
+ - tqdm
+ - yapf
+ - tabulate
+ - pytest
+ - pytest-repeat
+ - pytest-sugar
+ - pytest-xdist
+ - tabulate
+ - sphinx>=2.0
+ - doxygen
+ - pip
+ - pip:
+   - homog >= 0.1.10
+   - xbin >= 0.1.5
+   - cppimport
+   - breathe>=4.13.0
+   - exhale

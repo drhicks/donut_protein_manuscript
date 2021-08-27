@@ -1,0 +1,17 @@
+<ROSETTASCRIPTS>
+<RESIDUE_SELECTORS>
+</RESIDUE_SELECTORS>
+<TASKOPERATIONS>
+</TASKOPERATIONS>
+<SCOREFXNS>
+</SCOREFXNS>
+<FILTERS>
+    <Geometry name="geometry" omega="150" cart_bonded="30" start="1" end="9999" count_bad_residues="false" confidence="1"/>
+</FILTERS>
+<MOVERS>
+</MOVERS>
+
+<PROTOCOLS>
+    <Add filter_name="geometry"/>
+</PROTOCOLS>
+</ROSETTASCRIPTS>

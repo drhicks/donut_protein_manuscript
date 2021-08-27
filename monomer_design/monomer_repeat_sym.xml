@@ -1,0 +1,262 @@
+# use to need these 2 flags for repeat symmetry:
+# -symmetry_definition stoopid -old_sym_min true
+<ROSETTASCRIPTS>
+    <SCOREFXNS>
+
+        <ScoreFunction name="sfxn_16" weights="beta_nov16" />
+
+        <ScoreFunction name="sfxn" weights="beta_nov16" >
+            <Reweight scoretype="approximate_buried_unsat_penalty" weight="5" />
+            <Set approximate_buried_unsat_penalty_burial_atomic_depth="3.5" />
+            <Set approximate_buried_unsat_penalty_hbond_energy_threshold="-0.5" />
+            <Set approximate_buried_unsat_penalty_assume_const_backbone="true" />
+            <Set approximate_buried_unsat_penalty_natural_corrections1="true" />
+            <Reweight scoretype="res_type_constraint" weight="1.0" />
+        </ScoreFunction>
+        
+        <ScoreFunction name="sfxn_sap" weights="beta_nov16">
+            <Reweight scoretype="res_type_constraint" weight="0.5" />
+            <Reweight scoretype="approximate_buried_unsat_penalty" weight="5" />
+            <Set approximate_buried_unsat_penalty_burial_atomic_depth="3.5" />
+            <Set approximate_buried_unsat_penalty_hbond_energy_threshold="-0.5" />
+            <Set approximate_buried_unsat_penalty_assume_const_backbone="true" />
+            <Set approximate_buried_unsat_penalty_natural_corrections1="true" />
+            <Reweight scoretype="sap_constraint" weight="1.0" />
+        </ScoreFunction>
+
+        <ScoreFunction name="sfxn_SANDBAG" weights="none" >
+            <Reweight scoretype="res_type_constraint" weight="1.0" />
+        </ScoreFunction>
+    </SCOREFXNS>
+    <RESIDUE_SELECTORS>
+        <True name="true_sel" />
+
+        <ResidueName name="pro_and_gly_positions" residue_name3="PRO,GLY" />
+
+        <Layer name="to_design" select_core="false" select_boundary="false" select_surface="true" use_sidechain_neighbors="true" surface_cutoff="4"/>
+        <Not name="not_to_design" selector="to_design" />
+
+        <StoredResidueSubset name="stored_bad_sap" subset_name="bad_sap_stored" />
+        <Not name="not_stored_bad_sap" selector="stored_bad_sap" />
+
+        <Layer name="surface" select_core="false" select_boundary="false" select_surface="true" use_sidechain_neighbors="true"/>
+        <Layer name="boundary" select_core="false" select_boundary="true" select_surface="false" use_sidechain_neighbors="true"/>
+        <Layer name="core" select_core="true" select_boundary="false" select_surface="false" use_sidechain_neighbors="true"/>
+        <Layer name="surface_sasa" select_core="false" select_boundary="false" select_surface="true"
+            ball_radius="2.0" use_sidechain_neighbors="false" core_cutoff="20.0" surface_cutoff="30.0" />
+        <Layer name="core_sasa" select_core="true" select_boundary="false" select_surface="false"
+            ball_radius="2.0" use_sidechain_neighbors="false" core_cutoff="20.0" surface_cutoff="30.0" />
+
+        <Or name="surface_all" selectors="surface,surface_sasa"/>
+        <Not name="not_surface" selector="surface_all"/>
+    </RESIDUE_SELECTORS>
+    <RESIDUE_SELECTORS>
+        <!-- Layer Design -->
+        <SecondaryStructure name="sheet" overlap="0" minH="3" minE="2" include_terminal_loops="false" use_dssp="true" ss="E"/>
+        <SecondaryStructure name="entire_loop" overlap="0" minH="3" minE="2" include_terminal_loops="true" use_dssp="true" ss="L"/>
+        <SecondaryStructure name="entire_helix" overlap="0" minH="3" minE="2" include_terminal_loops="false" use_dssp="true" ss="H"/>
+        <And name="helix_cap" selectors="entire_loop">
+            <PrimarySequenceNeighborhood lower="1" upper="0" selector="entire_helix"/>
+        </And>
+        <And name="helix_start" selectors="entire_helix">
+            <PrimarySequenceNeighborhood lower="0" upper="1" selector="helix_cap"/>
+        </And>
+        <And name="helix" selectors="entire_helix">
+            <Not selector="helix_start"/>
+        </And>
+        <And name="loop" selectors="entire_loop">
+            <Not selector="helix_cap"/>
+        </And>
+
+    </RESIDUE_SELECTORS>
+
+    <TASKOPERATIONS>
+        <DesignRestrictions name="layer_design">
+            <Action selector_logic="surface AND helix_start"  aas="DEHKPQR"/>
+            <Action selector_logic="surface AND helix"        aas="EHKQR"/>
+            <Action selector_logic="surface AND sheet"        aas="EHKNQRST"/>
+            <Action selector_logic="surface AND loop"         aas="DEGHKNPQRST"/>
+            <Action selector_logic="boundary AND helix_start" aas="ADEFHIKLNPQRSTVWY"/>
+            <Action selector_logic="boundary AND helix"       aas="ADEFHIKLNQRSTVWY"/>
+            <Action selector_logic="boundary AND sheet"       aas="ADEFHIKLNQRSTVWY"/>
+            <Action selector_logic="boundary AND loop"        aas="ADEFGHIKLNPQRSTVWY"/>
+            <Action selector_logic="core AND helix_start"     aas="AFILPVWYDNSTH"/>
+            <Action selector_logic="core AND helix"           aas="AFILVWYDNSTH"/>
+            <Action selector_logic="core AND sheet"           aas="AFILVWYDNSTH"/>
+            <Action selector_logic="core AND loop"            aas="AFGILPVWYDNSTH"/>
+            <Action selector_logic="helix_cap"                aas="DGNPST"/>
+        </DesignRestrictions>
+    </TASKOPERATIONS>
+
+
+    </TASKOPERATIONS>
+    <TASKOPERATIONS>
+
+        <IncludeCurrent name="current" />
+        <LimitAromaChi2 name="limitchi2" chi2max="110" chi2min="70" include_trp="True" />
+        <ExtraRotamersGeneric name="ex1_ex2" ex1="1" ex2aro="1" />
+
+
+        <DisallowIfNonnative name="disallow_GLY" resnum="0" disallow_aas="G" />
+        <DisallowIfNonnative name="disallow_PRO" resnum="0" disallow_aas="P" />
+
+        <OperateOnResidueSubset name="restrict_PRO_GLY" selector="pro_and_gly_positions">
+                <RestrictToRepackingRLT/>
+        </OperateOnResidueSubset>
+
+
+        <RestrictAbsentCanonicalAAS name="only_SANDBAG" keep_aas="SANDPVG" />
+
+        <OperateOnResidueSubset name="only_surface" selector="not_surface">
+            <RestrictToRepackingRLT/>
+        </OperateOnResidueSubset>
+
+        <OperateOnResidueSubset name="restrict_loops2repacking" selector="entire_loop">
+            <RestrictToRepackingRLT/>
+        </OperateOnResidueSubset>
+
+        <OperateOnResidueSubset name="restrict_not_bad_sap" selector="not_stored_bad_sap">
+            <RestrictToRepackingRLT/>
+        </OperateOnResidueSubset>
+
+    </TASKOPERATIONS>
+    <MOVERS>
+
+        <SwitchChainOrder name="chain1onlypre" chain_order="1" />
+        <ScoreMover name="scorepose" scorefxn="sfxn_16" verbose="false" />
+        <ParsedProtocol name="chain1only">
+            <Add mover="chain1onlypre" />
+            <Add mover="scorepose" />
+        </ParsedProtocol>
+
+        <SavePoseMover name="save_start" restore_pose="0" reference_name="pose_start" />
+
+
+    </MOVERS>
+    <FILTERS>
+
+        <ResidueCount name="res_count_all" max_residue_count="9999" confidence="0"/>
+
+        
+        <ResidueCount name="AlaCount" residue_types="ALA" max_residue_count="6" confidence="0"/>
+        <ScoreType name="total_score_MBF" scorefxn="sfxn_16" score_type="total_score" threshold="0" confidence="0" />
+        <MoveBeforeFilter name="total_score_monomer" mover="chain1only" filter="total_score_MBF" confidence="0" />
+        <ScoreType name="p_aa_pp_MBF" scorefxn="sfxn_16" score_type="p_aa_pp" threshold="0" confidence="0" />
+        <MoveBeforeFilter name="p_aa_pp_monomer" mover="chain1only" filter="p_aa_pp_MBF" confidence="0" />
+        <ResidueCount name="res_count_MBF" max_residue_count="9999" confidence="0"/>
+        <MoveBeforeFilter name="res_count_monomer" mover="chain1only" filter="res_count_MBF" confidence="0" />
+
+           
+        <CalculatorFilter name="score_per_res" equation="total_score_monomer / res" threshold="-3.5" confidence="0">
+            <Var name="total_score_monomer" filter="total_score_monomer"/>
+            <Var name="res" filter="res_count_monomer"/>
+        </CalculatorFilter>
+
+        <CalculatorFilter name="p_aa_pp_per_res" equation="p_aa_pp_monomer / res" threshold="-3.5" confidence="0">
+            <Var name="p_aa_pp_monomer" filter="p_aa_pp_monomer"/>
+            <Var name="res" filter="res_count_monomer"/>
+        </CalculatorFilter>
+
+        <ScoreType name="fa_atr" scorefxn="sfxn_16" threshold="0" score_type="fa_atr" />
+        <CalculatorFilter name="fa_atr_per_res" equation="fa_atr_score / res" threshold="-5.2" confidence="0">
+                <Var name="fa_atr_score" filter="fa_atr"/>
+                <Var name="res" filter="res_count_all"/>
+        </CalculatorFilter>
+
+
+        <Rmsd name="rmsd_to_start" reference_name="pose_start" confidence="0" />
+
+
+        <SSShapeComplementarity name="ss_sc" verbose="0" confidence="1" min_sc="0.800" />
+
+        <PackStat name="packstat" repeats="20" confidence="0" />
+        <CavityVolume name="cavity" confidence="0"/>
+
+        <SSPrediction name="mismatch_probability" confidence="0" cmd="/software/psipred4/runpsipred_single" use_probability="1" mismatch_probability="1" use_svm="0" />
+
+        <BuriedUnsatHbonds name="vbuns5.5_heavy_ball_1.1" use_reporter_behavior="true" report_all_heavy_atom_unsats="true" scorefxn="sfxn"
+            ignore_surface_res="false" print_out_info_to_pdb="true" confidence="0" use_ddG_style="false" dalphaball_sasa="true" probe_radius="1.1"
+            atomic_depth_selection="5.5" burial_cutoff="1000" burial_cutoff_apo="0.2" />
+
+        <Time name="timed"/>
+    </FILTERS>
+    <SIMPLE_METRICS>
+        <SapScoreMetric name="my_sap_score" />
+        <PerResidueSapScoreMetric name="my_per_res_sap" />
+    </SIMPLE_METRICS>
+    <RESIDUE_SELECTORS>
+        <SimpleMetricSelector name="bad_sap" metric="my_per_res_sap" lower_bound="1.4" />
+    </RESIDUE_SELECTORS>
+    <MOVERS>
+        <StructProfileMover name="genProfile" add_csts_to_pose="1" consider_topN_frags="1000" eliminate_background="0" ignore_terminal_residue="0" only_loops="0" burialWt="8" RMSthreshold="0.6" />
+
+        <PackRotamersMover name="SANDBAG_pack" scorefxn="sfxn_SANDBAG" task_operations="only_SANDBAG" />
+
+        <SwitchResidueTypeSetMover name="to_fa" set="fa_standard"/>
+
+
+        <FastRelax name="FastDesign" disable_design="false" task_operations="limitchi2,ex1_ex2,disallow_PRO,disallow_GLY,restrict_PRO_GLY,layer_design" 
+            min_type="lbfgs_armijo_nonmonotone" scorefxn="sfxn" repeats="1" relaxscript="MonomerDesign2019" />
+
+        <FastRelax name="FastRelax" scorefxn="sfxn_16" repeats="1" batch="false" ramp_down_constraints="false"
+            cartesian="false" bondangle="true" bondlength="true" min_type="lbfgs_armijo_nonmonotone" relaxscript="MonomerRelax2019"
+            task_operations="ex1_ex2,limitchi2">
+        </FastRelax>
+
+        <RepeatProteinRelax name="setup_sym" numb_repeats="4" scorefxn="sfxn" loop_cutpoint_mode="false" minimize="false" relax_iterations="1"
+            cartesian="false" modify_symmetry_and_exit="true" remove_symmetry="false" />
+        <RepeatProteinRelax name="remove_sym" numb_repeats="4" scorefxn="sfxn" loop_cutpoint_mode="false" minimize="false" relax_iterations="1"
+            cartesian="false" modify_symmetry_and_exit="true" remove_symmetry="true" />
+
+        <StoreResidueSubset name="store_bad_sap" subset_name="bad_sap_stored" residue_selector="bad_sap" overwrite="1" />
+        <AddSapConstraintMover name="add_sap" speed="lightning" sap_goal="0" penalty_per_sap="0.5" score_selector="true_sel" sap_calculate_selector="true_sel"/> #sasa_selector="true_sel"
+        <PackRotamersMover name="redesign_bad_sap" scorefxn="sfxn_design" 
+            task_operations="limitchi2,ex1_ex2,only_surface,disallow_GLY,disallow_PRO,restrict_PRO_GLY,layer_design,restrict_not_bad_sap,restrict_loops2repacking"/>
+
+        <ClearConstraintsMover name="clear_constraints" />
+</MOVERS>
+    <APPLY_TO_POSE>
+    </APPLY_TO_POSE>
+    <PROTOCOLS>
+        <Add filter="timed" />
+
+        <Add mover="to_fa" />
+	
+        <Add mover="save_start" />
+
+        <Add mover="setup_sym" />
+
+        <Add mover="genProfile" />
+        <Add mover="SANDBAG_pack" />
+        <Add mover="FastDesign" />
+        <Add mover="FastDesign" />
+	<Add mover="FastDesign" />
+	<Add mover="FastRelax" />
+
+        <Add mover="remove_sym" />
+
+        <Add mover="store_bad_sap" />
+        <Add mover="add_sap" />
+        <Add mover="redesign_bad_sap" />
+
+        <Add mover="clear_constraints" />
+
+        <Add metrics="my_sap_score" />
+
+        <Add filter="score_per_res" />
+        <Add filter="AlaCount" />
+        <Add filter="res_count_all" />
+        <Add filter="rmsd_to_start" />
+        <Add filter="p_aa_pp_per_res" />
+        <Add filter="fa_atr_per_res" />
+        <Add filter="ss_sc" />
+        <Add filter="packstat" />
+        <Add filter="cavity" />
+        <Add filter="mismatch_probability" />
+
+        <Add filter_name="vbuns5.5_heavy_ball_1.1"/>
+
+        <Add filter="timed" />
+    </PROTOCOLS>
+    <OUTPUT />
+</ROSETTASCRIPTS>

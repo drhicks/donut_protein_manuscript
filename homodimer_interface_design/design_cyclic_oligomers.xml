@@ -1,0 +1,317 @@
+<ROSETTASCRIPTS>
+    <SCOREFXNS>
+	<ScoreFunction name="sfxn" weights="beta_cart" >
+            <Reweight scoretype="cart_bonded" weight="1.5" />
+        </ScoreFunction>
+        <ScoreFunction name="sfxn_fa_atr" weights="empty" >
+            <Reweight scoretype="fa_atr" weight="1" />
+        </ScoreFunction>
+        <ScoreFunction name="sfxn_design" weights="beta_cart" >
+            Reweight scoretype="res_type_constraint" weight="0.5" /> 
+            <Reweight scoretype="cart_bonded" weight="1.5" />
+            <Reweight scoretype="aa_composition" weight="1.0" />
+            <Reweight scoretype="approximate_buried_unsat_penalty" weight="5.0" />
+            <Set approximate_buried_unsat_penalty_assume_const_backbone="true" />
+	    <Set approximate_buried_unsat_penalty_natural_corrections1="true" />
+	    <Set approximate_buried_unsat_penalty_hbond_energy_threshold="-1.0" />
+	    <Set approximate_buried_unsat_penalty_hbond_bonus_cross_chain="-2.5" />
+	    <Set approximate_buried_unsat_penalty_hbond_bonus_ser_to_helix_bb="0.0" />
+        </ScoreFunction>
+    </SCOREFXNS>
+    <TASKOPERATIONS>
+        <SelectBySASA name="PR_monomer_core_sel" mode="sc" state="monomer" probe_radius="2.2" core_asa="15" surface_asa="15" core="0" boundary="1" surface="1" verbose="0" />
+    </TASKOPERATIONS>
+    <RESIDUE_SELECTORS>
+        <Layer name="surface" select_core="false" select_boundary="false" select_surface="true" use_sidechain_neighbors="true"/>
+        <Layer name="boundary" select_core="false" select_boundary="true" select_surface="false" use_sidechain_neighbors="true"/>
+	<Layer name="core" select_core="true" select_boundary="false" select_surface="false" use_sidechain_neighbors="true"/>
+	
+	<SecondaryStructure name="entire_loop_DRH" overlap="0" minH="3" minE="2" include_terminal_loops="false" use_dssp="true" ss="L"/>
+	
+        <Chain name="chainA" chains="1"/>
+        <Not name="chainB" selector="chainA"/>
+        <Neighborhood name="interface_chA" selector="chainB" distance="10.0" />
+        <Neighborhood name="interface_chB" selector="chainA" distance="10.0" />
+        <And name="AB_interface" selectors="interface_chA,interface_chB" />
+        <Not name="Not_interface" selector="AB_interface" />
+        <And name="actual_interface_chA" selectors="AB_interface,chainA" />
+        <And name="actual_interface_chB" selectors="AB_interface,chainB" />
+        <And name="chainB_not_interface" selectors="Not_interface,chainB" />
+
+        <ResidueName name="pro_and_gly_positions" residue_name3="PRO,GLY" />
+
+        <InterfaceByVector name="interface_by_vector" cb_dist_cut="10" nearby_atom_cut="5.5" vector_angle_cut="75" vector_dist_cut="9.0" grp1_selector="actual_interface_chA"
+            grp2_selector="actual_interface_chB"/>
+
+        <Task name="all_cores" fixed="true" task_operations="PR_monomer_core_sel" packable="false" designable="false"/>
+        <Layer name="all_surface" select_core="false" select_boundary="false" select_surface="true" use_sidechain_neighbors="true"/>
+        <And name="for_polar_boundary" selectors="interface_by_vector">
+            <Not selector="surface" />
+	       <Not selector="entire_loop_DRH" />
+	       <Not selector="core" />
+        </And>
+        <And name="for_polar_core" selectors="interface_by_vector">
+            <Not selector="surface" />
+               <Not selector="entire_loop_DRH" />
+               <Not selector="boundary" />
+        </And>
+	
+        <ResidueName name="vrt_res" residue_name3="VRT" />
+    </RESIDUE_SELECTORS>
+    <RESIDUE_SELECTORS>
+
+    </RESIDUE_SELECTORS>
+
+
+    <RESIDUE_SELECTORS>
+        <!-- Layer Design -->
+        <SecondaryStructure name="sheet" overlap="0" minH="3" minE="2" include_terminal_loops="false" use_dssp="true" ss="E"/>
+        <SecondaryStructure name="entire_loop" overlap="0" minH="3" minE="2" include_terminal_loops="true" use_dssp="true" ss="L"/>
+        <SecondaryStructure name="entire_helix" overlap="0" minH="3" minE="2" include_terminal_loops="false" use_dssp="true" ss="H"/>
+        <And name="helix_cap" selectors="entire_loop">
+            <PrimarySequenceNeighborhood lower="1" upper="0" selector="entire_helix"/>
+        </And>
+        <And name="helix_start" selectors="entire_helix">
+            <PrimarySequenceNeighborhood lower="0" upper="1" selector="helix_cap"/>
+        </And>
+        <And name="helix" selectors="entire_helix">
+            <Not selector="helix_start"/>
+        </And>
+        <And name="loop" selectors="entire_loop">
+            <Not selector="helix_cap"/>
+        </And>
+
+    </RESIDUE_SELECTORS>
+
+    <TASKOPERATIONS>        
+	    <DesignRestrictions name="layer_design">
+            <Action selector_logic="surface AND helix_start"  aas="DEHKPQR"/>
+            <Action selector_logic="surface AND helix"        aas="EHKQR"/>
+            <Action selector_logic="surface AND sheet"        aas="EHKNQRST"/>
+            <Action selector_logic="surface AND loop"         aas="DEGHKNPQRST"/>
+            <Action selector_logic="boundary AND helix_start" aas="ADEFHIKLNPQRSTVWY"/> 
+    	    <Action selector_logic="boundary AND helix"       aas="ADEFHIKLNQRSTVWY"/> 
+            <Action selector_logic="boundary AND sheet"       aas="ADEFHIKLNQRSTVWY"/>
+            <Action selector_logic="boundary AND loop"        aas="ADEFGHIKLNPQRSTVWY"/>
+            <Action selector_logic="core AND helix_start"     aas="AFILPVWYDNSTH"/> 
+    	    <Action selector_logic="core AND helix"           aas="AFILVWYDNSTH"/> 
+    	    <Action selector_logic="core AND sheet"           aas="AFILVWYDNSTH"/> 
+            <Action selector_logic="core AND loop"            aas="AFGILPVWYDNSTH"/>
+            <Action selector_logic="helix_cap"                aas="DGNPST"/> 
+        </DesignRestrictions>
+    </TASKOPERATIONS>
+    <MOVERS>
+        <AddCompositionConstraintMover name="5trp" >
+            <Comp entry="PENALTY_DEFINITION;TYPE TRP;ABSOLUTE 0;PENALTIES 0 5;DELTA_START 0;DELTA_END 1;BEFORE_FUNCTION CONSTANT;AFTER_FUNCTION LINEAR;END_PENALTY_DEFINITION;" />
+        </AddCompositionConstraintMover>
+        <AddCompositionConstraintMover name="2ala" >
+            <Comp entry="PENALTY_DEFINITION;TYPE ALA;ABSOLUTE 0;PENALTIES 0 2;DELTA_START 0;DELTA_END 1;BEFORE_FUNCTION CONSTANT;AFTER_FUNCTION LINEAR;END_PENALTY_DEFINITION;" />
+        </AddCompositionConstraintMover>
+
+
+        <AddCompositionConstraintMover name="50_percent_polar_boundary_max" selector="for_polar_boundary">
+            <Comp entry="PENALTY_DEFINITION;TYPE ASP HIS ASN GLN SER THR TYR;FRACT_DELTA_START 0;FRACT_DELTA_END 0.01;PENALTIES 0 0.1 ;FRACTION 0.50;BEFORE_FUNCTION CONSTANT;AFTER_FUNCTION QUADRATIC;END_PENALTY_DEFINITION" />
+        </AddCompositionConstraintMover>
+        <AddCompositionConstraintMover name="30_percent_polar_core_max" selector="for_polar_core">
+            <Comp entry="PENALTY_DEFINITION;TYPE ASP HIS ASN GLN SER THR TYR;FRACT_DELTA_START 0;FRACT_DELTA_END 0.01;PENALTIES 0 0.1 ;FRACTION 0.30;BEFORE_FUNCTION CONSTANT;AFTER_FUNCTION QUADRATIC;END_PENALTY_DEFINITION" />
+        </AddCompositionConstraintMover>
+
+        <AddCompositionConstraintMover name="30_percent_polar_boundary_min" selector="for_polar_boundary">
+            <Comp entry="PENALTY_DEFINITION;TYPE ASP HIS ASN GLN SER THR TYR;FRACT_DELTA_START -0.01;FRACT_DELTA_END 0;PENALTIES 0.1 0 ;FRACTION 0.30;BEFORE_FUNCTION QUADRATIC;AFTER_FUNCTION CONSTANT;END_PENALTY_DEFINITION" />
+        </AddCompositionConstraintMover>
+        <AddCompositionConstraintMover name="20_percent_polar_core_min" selector="for_polar_core">
+            <Comp entry="PENALTY_DEFINITION;TYPE ASP HIS ASN GLN SER THR TYR;FRACT_DELTA_START -0.01;FRACT_DELTA_END 0;PENALTIES 0.1 0 ;FRACTION 0.20;BEFORE_FUNCTION QUADRATIC;AFTER_FUNCTION CONSTANT;END_PENALTY_DEFINITION" />
+        </AddCompositionConstraintMover>
+        <DeleteRegionMover name="delete_vrt" residue_selector="vrt_res"/>
+    </MOVERS>
+    <TASKOPERATIONS>
+        <IncludeCurrent name="current" />
+        <LimitAromaChi2 name="limitchi2" chi2max="110" chi2min="70" include_trp="True" />
+        <ExtraRotamersGeneric name="ex1_ex2" ex1="1" ex2aro="1" />
+
+        <OperateOnResidueSubset name="restrict_to_interface" selector="Not_interface">
+            <PreventRepackingRLT/>
+        </OperateOnResidueSubset>
+
+        <DisallowIfNonnative name="disallow_GLY" resnum="0" disallow_aas="G" />
+        <DisallowIfNonnative name="disallow_PRO" resnum="0" disallow_aas="P" />
+        
+    	<OperateOnResidueSubset name="restrict_PRO_GLY" selector="pro_and_gly_positions">
+    		<RestrictToRepackingRLT/>
+    	</OperateOnResidueSubset>
+
+        <SelectBySASA name="PR_monomer_core" mode="sc" state="monomer" probe_radius="2.2" core_asa="10" surface_asa="10" core="0" boundary="1" surface="1" verbose="0" />
+
+        <OperateOnResidueSubset name="restrict_loops2repacking_DRH" selector="entire_loop_DRH">
+        <RestrictToRepackingRLT/>
+        </OperateOnResidueSubset>
+    </TASKOPERATIONS>
+    <MOVERS>
+
+	StructProfileMover name="genProfile" add_csts_to_pose="1" consider_topN_frags="100" eliminate_background="0" 
+            ignore_terminal_residue="1" only_loops="0" burialWt="0" RMSthreshold="0.6" residue_selector="chainA" />
+
+        <ClearConstraintsMover name="clear_constraints" />
+	
+        <SavePoseMover name="save_start" restore_pose="0" reference_name="pose_start" />
+
+        <DeleteRegionMover name="chain1onlypre" residue_selector="chainB"/>
+        <ScoreMover name="scorepose" scorefxn="sfxn" verbose="false" />
+        <ParsedProtocol name="chain1only">
+            <Add mover="chain1onlypre" />
+            <Add mover="scorepose" />
+        </ParsedProtocol>
+    </MOVERS>
+    <FILTERS>
+        
+        <Sasa name="interface_buried_sasa" confidence="0" />
+        
+        <BuriedUnsatHbonds name="vbuns5.5_heavy_ball_1.1" use_reporter_behavior="true" report_all_heavy_atom_unsats="true" scorefxn="sfxn" residue_selector="AB_interface"
+            ignore_surface_res="false" print_out_info_to_pdb="true" confidence="0" use_ddG_style="false" dalphaball_sasa="true" probe_radius="1.1" 
+            atomic_depth_selection="5.5" burial_cutoff="1000" burial_cutoff_apo="0.2" />
+        <BuriedUnsatHbonds name="sbuns5.5_heavy_ball_1.1" use_reporter_behavior="true" report_all_heavy_atom_unsats="true" scorefxn="sfxn" residue_selector="AB_interface"
+            ignore_surface_res="false" print_out_info_to_pdb="true" confidence="0" use_ddG_style="false" burial_cutoff="0.01" dalphaball_sasa="true" probe_radius="1.1"
+            atomic_depth_selection="5.5" atomic_depth_deeper_than="false" />
+
+        <ResidueCount name="AlaCount_MBF" residue_types="ALA" max_residue_count="6" confidence="0"/>
+        <MoveBeforeFilter name="AlaCount" mover="chain1only" filter="AlaCount_MBF" confidence="0" />
+
+        <ScoreType name="total_score_MBF" scorefxn="sfxn" score_type="total_score" threshold="0" confidence="0" />
+        <MoveBeforeFilter name="total_score_monomer" mover="chain1only" filter="total_score_MBF" confidence="0" />
+        <ScoreType name="p_aa_pp_MBF" scorefxn="sfxn" score_type="p_aa_pp" threshold="0" confidence="0" />
+        <MoveBeforeFilter name="p_aa_pp_monomer" mover="chain1only" filter="p_aa_pp_MBF" confidence="0" />
+        <ResidueCount name="res_count_MBF" max_residue_count="9999" confidence="0"/>
+        <MoveBeforeFilter name="res_count_monomer" mover="chain1only" filter="res_count_MBF" confidence="0" />
+
+
+        <CalculatorFilter name="score_per_res_monomer" equation="total_score_monomer / res" threshold="-3.5" confidence="0">
+            <Var name="total_score_monomer" filter="total_score_monomer"/>
+            <Var name="res" filter="res_count_monomer"/>
+    	</CalculatorFilter>
+
+        <CalculatorFilter name="score_per_res_complex" equation="total_score_monomer / res" threshold="-3.5" confidence="0">
+            <Var name="total_score_monomer" filter="total_score_MBF"/>
+            <Var name="res" filter="res_count_MBF"/>
+        </CalculatorFilter>
+
+        <CalculatorFilter name="p_aa_pp_per_res" equation="p_aa_pp_monomer / res" threshold="-3.5" confidence="0">
+            <Var name="p_aa_pp_monomer" filter="p_aa_pp_monomer"/>
+            <Var name="res" filter="res_count_monomer"/>
+        </CalculatorFilter>
+
+        <ScoreType name="fa_atr" scorefxn="sfxn" threshold="0" score_type="fa_atr" confidence="0"/>
+        <CalculatorFilter name="fa_atr_per_res" equation="fa_atr_score / res" threshold="-5.2" confidence="0">
+            <Var name="fa_atr_score" filter="fa_atr"/>
+            <Var name="res" filter="res_count_MBF"/>
+        </CalculatorFilter>
+
+        <Rmsd name="rmsd_to_start" reference_name="pose_start" confidence="0" />
+
+	<ShapeComplementarity name="interface_sc" min_sc="0.5" min_interface="0" verbose="0" quick="0" residue_selector1="chainA" residue_selector2="chainB" 
+            write_int_area="1" write_median_dist="1" max_median_dist="1000" confidence="0"/>
+        <SSShapeComplementarity name="ss_sc_complex" verbose="0" confidence="0" />
+        <MoveBeforeFilter name="ss_sc_monomer" mover="chain1only" filter="ss_sc_complex" confidence="0" />
+
+        <PackStat name="packstat_complex" repeats="20" confidence="0" />
+        <MoveBeforeFilter name="packstat_monomer" mover="chain1only" filter="packstat_complex" confidence="0" />
+
+        <CavityVolume name="cavity_complex" confidence="0"/>
+        <MoveBeforeFilter name="cavity_monomer" mover="chain1only" filter="cavity_complex" confidence="0" />
+
+        <Ddg name="ddg_norepack"  threshold="-10" chain_num="2" repeats="1" repack="0" confidence="0" scorefxn="sfxn" extreme_value_removal="0" />
+
+        <SSPrediction name="mismatch_probability" confidence="0" cmd="/software/psipred4/runpsipred_single" use_probability="1" mismatch_probability="1" use_svm="0" />
+
+        <ContactMolecularSurface name="contact_molecular_surface" distance_weight="0.5" target_selector="chainA" binder_selector="chainB" confidence="0" />
+
+        <BuriedSurfaceArea name="buried_npsa_FAMILYVW" select_only_FAMILYVW="True" atom_mode="hydrophobic_atoms" confidence="0.0" />
+        <MoveBeforeFilter name="buried_npsa_FAMILYVW_monomer" mover="chain1only" filter="buried_npsa_FAMILYVW" confidence="0" />
+
+        <Time name="timed"/>
+
+
+    </FILTERS>
+    <MOVERS>
+        <SwitchChainOrder name="monomer_ASU" chain_order="1" />
+        <SetupForSymmetry name="setup_sym" definition="/software/rosetta/main/database/symmetry/cyclic/%%sym%%_Z.sym" preserve_datacache="false" />
+        <ExtractAsymmetricPose name="extract_asp" clear_sym_def="true"/>
+
+        <AddConstraintsToCurrentConformationMover name="CAcsts" cst_weight="1.0" use_distance_cst="False" coord_dev="1.0" bound_width="0.5" CA_only="False" bb_only="True"/>
+        <VirtualRoot name="add_vrt_root" removable="true" remove="false" /> 
+        <VirtualRoot name="rm_vrt_root" removable="true" remove="true" />
+
+        <FastDesign name="FastDesign" scorefxn="sfxn_design" repeats="1" batch="false" ramp_down_constraints="false"
+            cartesian="false" bondangle="true" bondlength="true" min_type="lbfgs_armijo_nonmonotone" relaxscript="InterfaceDesign2019" 
+            task_operations="current,limitchi2,ex1_ex2,restrict_to_interface,disallow_GLY,disallow_PRO,PR_monomer_core,restrict_PRO_GLY,restrict_loops2repacking_DRH,layer_design">
+            <MoveMap name="MM" >
+                <ResidueSelector selector="Not_interface" chi="false" bb="false" bondangle="false" bondlength="false"/>
+            </MoveMap>	
+        </FastDesign>
+
+        <FastRelax name="FastRelax1" scorefxn="sfxn_design" repeats="1" batch="false" ramp_down_constraints="false" 
+            cartesian="false" bondangle="true" bondlength="true" min_type="lbfgs_armijo_nonmonotone" relaxscript="InterfaceRelax2019"
+            task_operations="ex1_ex2,limitchi2,restrict_to_interface">
+        </FastRelax>
+        <FastRelax name="FastRelax2" scorefxn="sfxn" repeats="1" batch="false" ramp_down_constraints="false"
+            cartesian="false" bondangle="true" bondlength="true" min_type="lbfgs_armijo_nonmonotone" relaxscript="InterfaceRelax2019"
+            task_operations="ex1_ex2,limitchi2">
+        </FastRelax>
+    </MOVERS>
+    <APPLY_TO_POSE>
+    </APPLY_TO_POSE>
+    <PROTOCOLS>
+    	<Add filter="timed" />
+
+    	<Add mover="monomer_ASU"/>	
+    	<Add mover="setup_sym"/>
+
+    	<Add mover="save_start" />
+
+        Add mover="genProfile" />
+    	<Add mover="5trp" />
+    	<Add mover="2ala"/>
+	<Add mover="30_percent_polar_boundary_min" />
+	<Add mover="50_percent_polar_boundary_max" />
+	<Add mover="20_percent_polar_core_min" />
+	<Add mover="30_percent_polar_core_max" />
+    	Add mover="CAcsts"/>
+    	Add mover="add_vrt_root"/>
+    	<Add mover="FastDesign" />            
+    	<Add mover="FastRelax1" />
+    	<Add mover="FastDesign" />
+    	<Add mover="FastRelax2" />
+    	Add mover="rm_vrt_root" />
+
+    	<Add mover="extract_asp" />
+    	<Add mover="delete_vrt"/>
+
+        <Add mover="clear_constraints" />
+
+    	<Add filter_name="interface_buried_sasa" />     
+    	<Add filter="vbuns5.5_heavy_ball_1.1" />        
+    	<Add filter="sbuns5.5_heavy_ball_1.1" />        
+
+    	<Add filter="score_per_res_monomer" />
+    	<Add filter="score_per_res_complex" />
+    	<Add filter="AlaCount" />
+    	<Add filter="res_count_monomer" />
+    	<Add filter="rmsd_to_start" />
+    	<Add filter="p_aa_pp_per_res" />
+    	<Add filter="fa_atr_per_res" />
+    	<Add filter="ss_sc_monomer" />
+    	<Add filter="ss_sc_complex" />
+    	<Add filter="interface_sc" />
+    	<Add filter="packstat_monomer" />
+    	<Add filter="packstat_complex" />
+    	<Add filter="cavity_monomer" />
+    	<Add filter="cavity_complex" />
+
+    	<Add filter_name="ddg_norepack" />
+    	<Add filter_name="mismatch_probability" />
+    	<Add filter_name="contact_molecular_surface" />
+    	<Add filter="buried_npsa_FAMILYVW_monomer" />
+    	
+    	<Add filter="timed" />
+    </PROTOCOLS>
+    <OUTPUT />
+</ROSETTASCRIPTS>

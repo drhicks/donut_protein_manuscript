@@ -1,0 +1,34 @@
+<!--
+Our fancy xml to collect metrics on our proteins
+-->
+
+<ROSETTASCRIPTS>
+    <SCOREFXNS>
+        <ScoreFunction name="sfxn_16" weights="beta_nov16"  symmetric="0" />
+    </SCOREFXNS>
+    <RESIDUE_SELECTORS>
+        <!-- sap -->
+        <Chain name="chainA" chains="1"/>
+    </RESIDUE_SELECTORS>
+
+    <TASKOPERATIONS>
+    </TASKOPERATIONS>
+
+    <MOVERS>
+    </MOVERS>
+    <FILTERS>
+
+        <Worst9mer name="worst9mer" rmsd_lookup_threshold="1.1"  only_helices="false" confidence="0" residue_selector="chainA"/>
+	<Worst9mer name="worst9mer_helix" rmsd_lookup_threshold="0.7"  only_helices="true" confidence="0" residue_selector="chainA"/>
+
+    </FILTERS>
+
+    <APPLY_TO_POSE>
+    </APPLY_TO_POSE>
+    <PROTOCOLS>
+
+        <Add filter="worst9mer" />
+        <Add filter="worst9mer_helix" />
+
+    </PROTOCOLS>
+</ROSETTASCRIPTS>

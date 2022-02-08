@@ -1,5 +1,3 @@
-# use to need these 2 flags for repeat symmetry:
-# -symmetry_definition stoopid -old_sym_min true
 <ROSETTASCRIPTS>
     <SCOREFXNS>
 
@@ -29,7 +27,7 @@
         </ScoreFunction>
     </SCOREFXNS>
     <RESIDUE_SELECTORS>
-        <True name="true_sel" />
+	<True name="true_sel" />
 
         <ResidueName name="pro_and_gly_positions" residue_name3="PRO,GLY" />
 
@@ -89,7 +87,6 @@
     </TASKOPERATIONS>
 
 
-    </TASKOPERATIONS>
     <TASKOPERATIONS>
 
         <IncludeCurrent name="current" />
@@ -188,7 +185,9 @@
         <SimpleMetricSelector name="bad_sap" metric="my_per_res_sap" lower_bound="1.4" />
     </RESIDUE_SELECTORS>
     <MOVERS>
-        <StructProfileMover name="genProfile" add_csts_to_pose="1" consider_topN_frags="1000" eliminate_background="0" ignore_terminal_residue="0" only_loops="0" burialWt="8" RMSthreshold="0.6" />
+	<StructProfileMover name="genProfile" add_csts_to_pose="0" consider_topN_frags="1000" eliminate_background="0" ignore_terminal_residue="1" only_loops="0" burialWt="8" RMSthreshold="0.6" outputProfile="1" profile_name=""/>
+	
+	<ConstraintSetMover name="load_profile" cst_file="%%profile%%" add_constraints="true"/>
 
         <PackRotamersMover name="SANDBAG_pack" scorefxn="sfxn_SANDBAG" task_operations="only_SANDBAG" />
 
@@ -210,23 +209,26 @@
 
         <StoreResidueSubset name="store_bad_sap" subset_name="bad_sap_stored" residue_selector="bad_sap" overwrite="1" />
         <AddSapConstraintMover name="add_sap" speed="lightning" sap_goal="0" penalty_per_sap="0.5" score_selector="true_sel" sap_calculate_selector="true_sel"/> #sasa_selector="true_sel"
-        <PackRotamersMover name="redesign_bad_sap" scorefxn="sfxn_design" 
+        <PackRotamersMover name="redesign_bad_sap" scorefxn="sfxn_sap" 
             task_operations="limitchi2,ex1_ex2,only_surface,disallow_GLY,disallow_PRO,restrict_PRO_GLY,layer_design,restrict_not_bad_sap,restrict_loops2repacking"/>
 
         <ClearConstraintsMover name="clear_constraints" />
-</MOVERS>
+    </MOVERS>
     <APPLY_TO_POSE>
     </APPLY_TO_POSE>
     <PROTOCOLS>
         <Add filter="timed" />
 
-        <Add mover="to_fa" />
+	<Add mover="to_fa" />
 	
         <Add mover="save_start" />
+	
+	<Add mover="genProfile" />
 
         <Add mover="setup_sym" />
 
-        <Add mover="genProfile" />
+	<Add mover="load_profile"/>
+
         <Add mover="SANDBAG_pack" />
         <Add mover="FastDesign" />
         <Add mover="FastDesign" />

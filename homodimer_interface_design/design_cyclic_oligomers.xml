@@ -233,7 +233,7 @@
     </FILTERS>
     <MOVERS>
         <SwitchChainOrder name="monomer_ASU" chain_order="1" />
-        <SetupForSymmetry name="setup_sym" definition="/software/rosetta/main/database/symmetry/cyclic/%%sym%%_Z.sym" preserve_datacache="false" />
+        <SetupForSymmetry name="setup_sym" definition="/software/rosetta/main/database/symmetry/cyclic/C%%sym%%_Z.sym" preserve_datacache="false" />
         <ExtractAsymmetricPose name="extract_asp" clear_sym_def="true"/>
 
         <AddConstraintsToCurrentConformationMover name="CAcsts" cst_weight="1.0" use_distance_cst="False" coord_dev="1.0" bound_width="0.5" CA_only="False" bb_only="True"/>

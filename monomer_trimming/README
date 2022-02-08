@@ -1,0 +1,2 @@
+program takes in a directory with monomer alpha helix repeat proteins and outputs the best N/C termini variants
+this is meant to get rid of floppy termini

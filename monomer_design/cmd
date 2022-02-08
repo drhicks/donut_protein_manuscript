@@ -1,0 +1,3 @@
+base=$(basename ${1} ".pdb")
+
+/software/rosetta/latest/bin/rosetta_scripts.hdf5.linuxgccrelease -parser:protocol monomer_repeat_sym.xml -indexed_structure_store:fragment_store /home/drhicks1/DB/hdf5/ss_grouped_vall_helix_shortLoop.h5 -s ${1} -beta_nov16 -parser:script_vars profile=${base}_0001.MSAcst

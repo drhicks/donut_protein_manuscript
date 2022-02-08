@@ -1,0 +1,3 @@
+in the manuscript we used repeat symmetry during design, but we provide an asymmetric design option here as well
+can run with:
+bash cmd path_to_your.pdb

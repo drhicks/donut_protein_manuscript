@@ -6,8 +6,8 @@
 </SCOREFXNS>
 <FILTERS>
     <Geometry name="geometry" omega="150" cart_bonded="30" start="1" end="9999" count_bad_residues="false" confidence="1"/> # sometimes loop closure uses fragments with cis bonds
-    <worst9mer name="worst9mer_a" threshold="0.4"/>
-    <worst9mer name="worst9mer_h" threshold="0.15" only_helices="true"/>
+    <Worst9mer name="worst9mer_a" threshold="0.4"/>
+    <Worst9mer name="worst9mer_h" threshold="0.15" only_helices="true"/>
 </FILTERS>
 <MOVERS>
     <FixAllLoopsMover name="FixLoops" loopLengthRange="2,4" RMSthreshold="0.4" resAdjustmentRangeSide1="-3,3" resAdjustmentRangeSide2="-3,3" residue_range="1,%%repeat_length%%" max_vdw_change="10.0" ideal="false" reject_failed_loops="true"/>

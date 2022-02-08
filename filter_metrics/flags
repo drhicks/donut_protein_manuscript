@@ -1,0 +1,6 @@
+-corrections::beta_nov16
+-indexed_structure_store:fragment_store /home/drhicks1/DB/hdf5/ss_grouped_vall_all.h5
+#-mute all
+-out:file:silent_struct_type binary
+-in:file:silent_struct_type binary
+-out:no_nstruct_label

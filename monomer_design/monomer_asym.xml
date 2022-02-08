@@ -87,7 +87,6 @@
     </TASKOPERATIONS>
 
 
-    </TASKOPERATIONS>
     <TASKOPERATIONS>
 
         <IncludeCurrent name="current" />
@@ -208,7 +207,7 @@
 
         <StoreResidueSubset name="store_bad_sap" subset_name="bad_sap_stored" residue_selector="bad_sap" overwrite="1" />
         <AddSapConstraintMover name="add_sap" speed="lightning" sap_goal="0" penalty_per_sap="0.5" score_selector="true_sel" sap_calculate_selector="true_sel"/> #sasa_selector="true_sel"
-        <PackRotamersMover name="redesign_bad_sap" scorefxn="sfxn_design" 
+        <PackRotamersMover name="redesign_bad_sap" scorefxn="sfxn_sap" 
             task_operations="limitchi2,ex1_ex2,only_surface,disallow_GLY,disallow_PRO,restrict_PRO_GLY,layer_design,restrict_not_bad_sap,restrict_loops2repacking"/>
 
         <ClearConstraintsMover name="clear_constraints" />

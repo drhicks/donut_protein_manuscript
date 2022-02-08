@@ -1,3 +1,6 @@
+#backbone samplign code exists in the rosetta branch (until merged into main):
+#https://github.com/RosettaCommons/main/tree/drhicks1/riseSF_merge_test
+
 #1
 # python make_file.py
 
@@ -17,12 +20,12 @@
 #-score:ideal_repeat_radius 25.0
 #-score:ideal_repeat_curve 0.30
 #--repeat params desired values
-#-score:ideal_repeat_rise_before_func QUAD # options are QUAD LINEAR CONST0
+#-score:ideal_repeat_rise_before_func LINEAR # options are QUAD LINEAR CONST0
 #-score:ideal_repeat_radius_before_func LINEAR
-#-score:ideal_repeat_curve_before_func QUAD
-#-score:ideal_repeat_rise_after_func QUAD
+#-score:ideal_repeat_curve_before_func LINEAR
+#-score:ideal_repeat_rise_after_func LINEAR
 #-score:ideal_repeat_radius_after_func LINEAR
-#-score:ideal_repeat_curve_after_func QUAD
+#-score:ideal_repeat_curve_after_func LINEAR
 
 #improtant terms for score *wts files
 #rpre 1.0

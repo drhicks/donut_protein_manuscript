@@ -34,12 +34,12 @@
 -score:ideal_repeat_radius 25.0
 -score:ideal_repeat_curve 0.30
 #--repeat params desired values
--score:ideal_repeat_rise_before_func QUAD # options are QUAD LINEAR CONST0
+-score:ideal_repeat_rise_before_func LINEAR # options are QUAD LINEAR CONST0
 -score:ideal_repeat_radius_before_func LINEAR
--score:ideal_repeat_curve_before_func QUAD
--score:ideal_repeat_rise_after_func QUAD
+-score:ideal_repeat_curve_before_func LINEAR
+-score:ideal_repeat_rise_after_func LINEAR
 -score:ideal_repeat_radius_after_func LINEAR
--score:ideal_repeat_curve_after_func QUAD
+-score:ideal_repeat_curve_after_func LINEAR
 
 # to filter out designs with bad helix fragments
 -indexed_structure_store:fragment_store  /home/drhicks1/DB/hdf5/ss_grouped_vall_all.h5 
